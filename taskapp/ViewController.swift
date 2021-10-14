@@ -9,16 +9,19 @@ import UIKit
 import RealmSwift
 import UserNotifications
 
-class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var searchBar: UISearchBar!
     
     // Realmインスタンスを取得する
     let realm = try! Realm()
+    
     // DB内のタスクが格納されるリスト。
     // 日付の近い順でソート：昇順
     // 以降内容をアップデートするとリスト内は自動的に更新される。
     var taskArray = try! Realm().objects(Task.self).sorted(byKeyPath: "date", ascending: true)
     
+    var filterdDatas = [String]()
     
     
     override func viewDidLoad() {
@@ -27,7 +30,22 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         // Do any additional setup after loading the view.
         tableView.delegate = self
         tableView.dataSource = self
+        searchBar.delegate = self
+        searchBar.placeholder="検索したいワード"
+        
     }
+    
+    //検索バーにテキストを入力した時にfunctionを動かす
+    func searchBarsearchBar(_ searchBar: UISearchBar,textDidChange searchText: String)-> Bool {
+        //ためしに色を赤に変更
+        //searchBar.backgroundColor = UIColor.red
+        //ここに記述
+        let predicate = NSPredicate(format: "category = %@", searchBar.text!)
+        taskArray = realm.objects(Task.self).filter(predicate)
+        tableView.reloadData()
+        return true
+    }
+    
     // データの数（＝セルの数）を返すメソッド
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return taskArray.count
@@ -61,6 +79,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath)-> UITableViewCell.EditingStyle {
         return .delete
     }
+    
     
     // Delete ボタンが押された時に呼ばれるメソッド
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
@@ -99,7 +118,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
            } else {
                let task = Task()
 
-               let allTasks = realm.objects(Task.self)
+            let allTasks = realm.objects(Task.self)
                if allTasks.count != 0 {
                    task.id = allTasks.max(ofProperty: "id")! + 1
                }
@@ -113,5 +132,25 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView.reloadData()
     }
     
+    
 }
 
+/*extension ViewController: UITextFieldDelegate {
+    private func searchBar(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        if let text = searchBar.text {
+            (string.count == 0) ? filterText(String(text.dropLast())) : filterText(text+string)
+        }
+        return true
+    }
+
+    func filterText(_ query: String) {
+        filterdDatas.removeAll()
+        taskArray.forEach { Task in
+            if Task.lowercased().starts(with: query.lowercased()) {
+                filterdDatas.append(Task)
+            }
+        }
+        tableView.reloadData()
+    }
+}
+ */

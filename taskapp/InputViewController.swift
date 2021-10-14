@@ -14,10 +14,10 @@ class InputViewController: UIViewController {
     @IBOutlet weak var titleTextField: UITextField!
     @IBOutlet weak var contentsTextView: UITextView!
     @IBOutlet weak var datePicker: UIDatePicker!
+    @IBOutlet weak var category: UITextField!
     
     let realm = try! Realm()
     var task: Task!
-//    var task: category!
    
     
     override func viewDidLoad() {
@@ -29,12 +29,15 @@ class InputViewController: UIViewController {
         
         titleTextField.text = task.title
         contentsTextView.text = task.contents
+        category.text = task.category
         datePicker.date = task.date
     }
+    
     override func viewWillDisappear(_ animated: Bool) {
         try! realm.write {
             self.task.title = self.titleTextField.text!
             self.task.contents = self.contentsTextView.text
+            self.task.category = self.category.text!
             self.task.date = self.datePicker.date
             self.realm.add(self.task, update: .modified)
         }
@@ -43,7 +46,7 @@ class InputViewController: UIViewController {
         
         super.viewWillDisappear(animated)
     }
-    // タスクのローカル通知を登録する --- ここから ---
+    // タスクのローカル通知を登録する
         func setNotification(task: Task) {
             let content = UNMutableNotificationContent()
             // タイトルと内容を設定(中身がない場合メッセージ無しで音だけの通知になるので「(xxなし)」を表示する)
@@ -57,6 +60,12 @@ class InputViewController: UIViewController {
             } else {
                 content.body = task.contents
             }
+            if task.category == "" {
+                content.subtitle = "(内容なし)"
+            } else {
+                content.subtitle = task.category
+            }
+            
             content.sound = UNNotificationSound.default
 
             // ローカル通知が発動するtrigger（日付マッチ）を作成
@@ -81,10 +90,13 @@ class InputViewController: UIViewController {
                     print("---------------/")
                 }
             }
-        } // --- ここまで追加 ---
+        }
+    
+    
     @objc func dismissKeyboard(){
         // キーボードを閉じる
         view.endEditing(true)
     }
     
 }
+
