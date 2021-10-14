@@ -34,17 +34,26 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         searchBar.placeholder="検索したいワード"
         
     }
-    
+
     //検索バーにテキストを入力した時にfunctionを動かす
-    func searchBarsearchBar(_ searchBar: UISearchBar,textDidChange searchText: String)-> Bool {
-        //ためしに色を赤に変更
+    func searchBar(_ searchBar: UISearchBar, shouldChangeTextIn range: NSRange, replacementText: String) -> Bool{
         //searchBar.backgroundColor = UIColor.red
-        //ここに記述
-        let predicate = NSPredicate(format: "category = %@", searchBar.text!)
-        taskArray = realm.objects(Task.self).filter(predicate)
-        tableView.reloadData()
+        
+        if searchBar.text == "" {
+            taskArray = realm.objects(Task.self)
+            tableView.reloadData()
+        }else{
+            let predicate = NSPredicate(format: "category = %@", searchBar.text!)
+            taskArray = realm.objects(Task.self).filter(predicate)
+            tableView.reloadData()
+        }
+        
+        print("検索しました")
         return true
     }
+    /*func searchBar(_ searchBar: UISearchBar,textDidChange searchText: String)-> Bool {
+        return true
+    }*/
     
     // データの数（＝セルの数）を返すメソッド
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
